@@ -125,7 +125,9 @@ Hard constraints are used to guarantee the temperature boundaries are never viol
 ## Project Structure
 
 ```
-├── mpc_controller.py       # main controller — runs on Raspberry Pi
-├── MPC_Simulation.ipynb    # simulation notebook — runs on laptop
-└── README.md               # this file
+├── mpc_controller.py           # main controller — runs on Raspberry Pi
+├── MPC_Simulation.ipynb        # simulation notebook — runs on laptop
+├── test_get_energy_price.py    # test file for fetching energy price
+├── test_led.py                 # test file to testing led
+└── README.md                   # this file
 ```
