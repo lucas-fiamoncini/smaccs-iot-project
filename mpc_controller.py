@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 
 # ── User-defined settings ──────────────────────────────────────────────────
 API_KEY     = "YOUR_ENTSOE_API_KEY"
-T_MIN       = 22.0   # minimum allowed temperature (°C)
-T_MAX       = 26.0   # maximum allowed temperature (°C)
+T_MIN       = 23.0   # minimum allowed temperature (°C)
+T_MAX       = 25.0   # maximum allowed temperature (°C)
 T_OUTDOOR   = 18.0   # outdoor temperature (°C) — user defined for now
 
 # ── Thermal model parameters ───────────────────────────────────────────────
@@ -21,7 +21,7 @@ P_MAX = 50.0    # max heating power
 
 # ── MPC settings ───────────────────────────────────────────────────────────
 dt      = 15 / 60   # time step: 15 minutes in hours
-HORIZON = 4          # look 4 steps ahead = 1 hour
+HORIZON = 12          # look 12 steps ahead = 3 hours
 
 # ── Hardware setup ─────────────────────────────────────────────────────────
 DHT_PIN = board.D4
