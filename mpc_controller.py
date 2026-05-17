@@ -45,12 +45,10 @@ def fetch_prices():
     today = pd.Timestamp.now(tz='Europe/Helsinki').normalize()
     tomorrow = today + pd.Timedelta(days=1)
 
-    raw = client.query_day_ahead_prices('FI', today, tomorrow)
-
-    # resample from hourly to 15-min by forward-filling
-    df = raw.resample('15min').ffill().reset_index()
+    df = client.query_day_ahead_prices('FI', today, tomorrow).reset_index()
     df.columns = ['timestamp', 'price']
     df['price'] = df['price'] / 1000.0  # €/MWh → €/kWh
+    df = df.head(96)  # limit to 24h * 4 = 96 intervals (15 min steps)
 
     print(f"Fetched {len(df)} price intervals")
     print(f"  Min: {df['price'].min()*100:.2f} c€/kWh  "
