@@ -114,7 +114,7 @@ T_MIN ≤ T[i] ≤ T_MAX   for all i in horizon
 0 ≤ p[i] ≤ 1           for all i in horizon
 ```
 
-Hard constraints (rather than penalty terms) are used to guarantee the temperature boundaries are never violated. If the optimiser fails to find a feasible solution, a thermostat fallback ensures safe operation.
+Hard constraints are used to guarantee the temperature boundaries are never violated. If the optimiser fails to find a feasible solution, a thermostat fallback ensures safe operation.
 
 ---
 
