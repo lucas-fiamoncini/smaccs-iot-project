@@ -95,7 +95,7 @@ dT/dt = (1/C) × (p × P_MAX − k × (T_in − T_outdoor))
 | `k` | Heat loss coefficient (how fast heat escapes) | 1.5 |
 | `P_MAX` | Maximum heating power | 50.0 |
 | `dt` | Time step | 15 min |
-| `HORIZON` | Prediction horizon | 4 steps (1 hour) |
+| `HORIZON` | Prediction horizon | 12 steps (3 hours) |
 
 `P_MAX = 50` is sized for the worst-case scenario (outdoor temperature of −10°C), ensuring the heater can always maintain `T_MIN` regardless of conditions.
 
