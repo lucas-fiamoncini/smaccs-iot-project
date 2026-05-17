@@ -17,7 +17,7 @@ T_OUTDOOR   = 18.0   # outdoor temperature (°C) — user defined for now
 # ── Thermal model parameters ───────────────────────────────────────────────
 C     = 10.0   # thermal capacitance
 k     = 1.5    # heat loss coefficient
-P_MAX = 8.0    # max heating power
+P_MAX = 50.0    # max heating power
 
 # ── MPC settings ───────────────────────────────────────────────────────────
 dt      = 15 / 60   # time step: 15 minutes in hours
@@ -91,28 +91,66 @@ def thermal_model(T, p):
 def run_mpc(T_current, price_forecast):
     """
     Solve the MPC optimisation over the prediction horizon.
+    Uses hard constraints to enforce temperature boundaries.
     Returns optimal power for the current 15-min interval (0.0 to 1.0).
     """
+
     def cost_function(power_sequence):
         T = T_current
         total_cost = 0
-        penalty = 0
         for i, p in enumerate(power_sequence):
             T = thermal_model(T, p)
             total_cost += p * P_MAX * price_forecast[i] * dt
-            if T < T_MIN:
-                penalty += 1000 * (T_MIN - T) ** 2
-            if T > T_MAX:
-                penalty += 1000 * (T - T_MAX) ** 2
-        return total_cost + penalty
+        return total_cost  # no penalty — hard constraints handle it
+
+    # hard constraints: T must stay within [T_MIN, T_MAX] at every step
+    constraints = []
+    for step in range(HORIZON):
+        def make_lower(s):
+            def lower(power_sequence):
+                T = T_current
+                for j in range(s + 1):
+                    T = thermal_model(T, power_sequence[j])
+                return T - T_MIN  # must be >= 0
+            return lower
+
+        def make_upper(s):
+            def upper(power_sequence):
+                T = T_current
+                for j in range(s + 1):
+                    T = thermal_model(T, power_sequence[j])
+                return T_MAX - T  # must be >= 0
+            return upper
+
+        constraints.append({'type': 'ineq', 'fun': make_lower(step)})
+        constraints.append({'type': 'ineq', 'fun': make_upper(step)})
+
+    # warm start based on current temperature
+    if T_current < T_MIN:
+        p0 = np.ones(HORIZON)
+    elif T_current > T_MAX:
+        p0 = np.zeros(HORIZON)
+    else:
+        p0 = np.full(HORIZON, 0.3)
 
     result = minimize(
         cost_function,
-        np.zeros(HORIZON),
+        p0,
         method='SLSQP',
         bounds=[(0, 1)] * HORIZON,
-        options={'maxiter': 100, 'ftol': 1e-6}
+        constraints=constraints,
+        options={'maxiter': 200, 'ftol': 1e-8}
     )
+
+    # safety fallback: if optimiser failed, use thermostat logic
+    if not result.success:
+        if T_current < T_MIN:
+            return 1.0
+        elif T_current > T_MAX:
+            return 0.0
+        else:
+            return 0.3
+
     return np.clip(result.x[0], 0, 1)
 
 # ── Apply power to LED ─────────────────────────────────────────────────────
